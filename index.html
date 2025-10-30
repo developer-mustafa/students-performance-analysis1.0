@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --container-bg: white;
+            --text-color: #333;
+            --heading-color: #2c3e50;
+            --border-color: #ddd;
+            --card-bg: #f8f9fa;
+            --primary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            --card-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --heading-color: #f0f0f0;
+            --border-color: #444;
+            --card-bg: #3a3a3a;
+            --primary: #4a9fe3;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --warning: #d68910;
+            --shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            --card-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--heading-color);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: var(--heading-color);
+        }
+        
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        select, button {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        select:focus, button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--heading-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+        
+        .group-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .group-btn {
+            padding: 8px 15px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-color);
+        }
+        
+        .group-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .group-stats {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .group-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .group-stat-card {
+            background-color: var(--container-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .group-stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .group-name {
+            font-weight: bold;
+            color: var(--heading-color);
+        }
+        
+        .pass-fail-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .pass-count, .fail-count {
+            text-align: center;
+            padding: 8px;
+            border-radius: 5px;
+            width: 48%;
+        }
+        
+        .pass-count {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+        }
+        
+        .fail-count {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+        }
+        
+        .pass-fail-chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .failed-students {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .failed-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .failed-student {
+            background-color: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .chart-container {
+                height: 400px;
+            }
+            
+            .pass-fail-chart-container {
+                height: 250px;
+            }
+            
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+        <h1>Student Performance Dashboard (Mustafa sir)</h1>
+        
+        <div class="header-controls">
+            <div class="controls">
+                <select id="chartType">
+                    <option value="total">Total Scores Ranking</option>
+                    <option value="written">Written Exam Scores</option>
+                    <option value="mcq">MCQ Scores</option>
+                    <option value="practical">Practical Exam Scores</option>
+                </select>
+                <select id="sortOrder">
+                    <option value="desc">Highest to Lowest</option>
+                    <option value="asc">Lowest to Highest</option>
+                </select>
+                <button id="exportBtn">Export Chart</button>
+            </div>
+            
+            <div class="group-filters">
+                <div class="group-btn active" data-group="all">All Groups</div>
+                <div class="group-btn" data-group="Science">Science</div>
+                <div class="group-btn" data-group="Studies">Studies</div>
+                <div class="group-btn" data-group="Arts">Arts</div>
+            </div>
+        </div>
+        
+        <div class="stats" id="statsContainer">
+            <!-- Statistics will be populated here -->
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+        
+        <div class="failed-students">
+            <h2>Failed Students (Written < 17)</h2>
+            <div class="failed-list" id="failedStudentsContainer">
+                <!-- Failed students will be populated here -->
+            </div>
+        </div>
+        
+        <div class="group-stats">
+            <h2>Group-wise Pass/Fail Statistics</h2>
+            <div class="group-stats-grid" id="groupStatsContainer">
+                <!-- Group statistics will be populated here -->
+            </div>
+            
+            <div class="pass-fail-chart-container">
+                <canvas id="passFailChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+       
+   const studentData = [
+  {"id": 1, "name": "Student 1", "group": "Science", "written": 43, "mcq": 0, "practical": 22, "total": 65},
+  {"id": 2, "name": "Student 2", "group": "Science", "written": 40, "mcq": 0, "practical": 22, "total": 62},
+  {"id": 3, "name": "Student 3", "group": "Science", "written": 42, "mcq": 0, "practical": 22, "total": 64},
+  {"id": 4, "name": "Student 4", "group": "Science", "written": 44, "mcq": 0, "practical": 22, "total": 66},
+  {"id": 5, "name": "Student 5", "group": "Science", "written": 34, "mcq": 0, "practical": 22, "total": 56},
+  {"id": 6, "name": "Student 6", "group": "Science", "written": 7, "mcq": 0, "practical": 0, "total": 7},
+  {"id": 7, "name": "Student 7", "group": "Science", "written": 41, "mcq": 0, "practical": 22, "total": 63},
+  
+  {"id": 8, "name": "Student 8", "group": "Studies", "written": 30, "mcq": 0, "practical": 22, "total": 52},
+  {"id": 9, "name": "Student 9", "group": "Studies", "written": 43, "mcq": 0, "practical": 22, "total": 65},
+  {"id": 10, "name": "Student 10", "group": "Studies", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 11, "name": "Student 11", "group": "Studies", "written": 42, "mcq": 0, "practical": 22, "total": 64},
+  {"id": 12, "name": "Student 12", "group": "Studies", "written": 41, "mcq": 0, "practical": 22, "total": 63},
+  {"id": 13, "name": "Student 13", "group": "Studies", "written": 37, "mcq": 0, "practical": 22, "total": 59},
+  {"id": 14, "name": "Student 14", "group": "Studies", "written": 36, "mcq": 0, "practical": 22, "total": 58},
+  {"id": 15, "name": "Student 15", "group": "Studies", "written": 38, "mcq": 0, "practical": 22, "total": 60},
+  {"id": 16, "name": "Student 16", "group": "Studies", "written": 28, "mcq": 0, "practical": 22, "total": 50},
+  {"id": 17, "name": "Student 17", "group": "Studies", "written": 28, "mcq": 0, "practical": 22, "total": 50},
+  {"id": 18, "name": "Student 18", "group": "Studies", "written": 25, "mcq": 0, "practical": 22, "total": 47},
+  {"id": 19, "name": "Student 19", "group": "Studies", "written": 24, "mcq": 0, "practical": 22, "total": 46},
+  
+  {"id": 20, "name": "Student 20", "group": "Arts", "written": 50, "mcq": 0, "practical": 22, "total": 72},
+  {"id": 21, "name": "Student 21", "group": "Arts", "written": 47, "mcq": 0, "practical": 22, "total": 69},
+  {"id": 22, "name": "Student 22", "group": "Arts", "written": 36, "mcq": 0, "practical": 22, "total": 58},
+  {"id": 23, "name": "Student 23", "group": "Arts", "written": 39, "mcq": 0, "practical": 22, "total": 61},
+  {"id": 24, "name": "Student 24", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 25, "name": "Student 25", "group": "Arts", "written": 42, "mcq": 0, "practical": 22, "total": 64},
+  {"id": 26, "name": "Student 26", "group": "Arts", "written": 38, "mcq": 0, "practical": 22, "total": 60},
+  {"id": 27, "name": "Student 27", "group": "Arts", "written": 26, "mcq": 0, "practical": 22, "total": 48},
+  {"id": 28, "name": "Student 28", "group": "Arts", "written": 44, "mcq": 0, "practical": 22, "total": 66},
+  {"id": 29, "name": "Student 29", "group": "Arts", "written": 35, "mcq": 0, "practical": 22, "total": 57},
+  {"id": 30, "name": "Student 30", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 31, "name": "Student 31", "group": "Arts", "written": 38, "mcq": 0, "practical": 22, "total": 60},
+  {"id": 32, "name": "Student 32", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 33, "name": "Student 33", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 34, "name": "Student 34", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 35, "name": "Student 35", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 36, "name": "Student 36", "group": "Arts", "written": 32, "mcq": 0, "practical": 22, "total": 54},
+  {"id": 37, "name": "Student 37", "group": "Arts", "written": 24, "mcq": 0, "practical": 22, "total": 46},
+  {"id": 38, "name": "Student 38", "group": "Arts", "written": 32, "mcq": 0, "practical": 22, "total": 54},
+  {"id": 39, "name": "Student 39", "group": "Arts", "written": 35, "mcq": 0, "practical": 22, "total": 57},
+  {"id": 40, "name": "Student 40", "group": "Arts", "written": 15, "mcq": 0, "practical": 0, "total": 15},
+  {"id": 41, "name": "Student 41", "group": "Arts", "written": 31, "mcq": 0, "practical": 22, "total": 53},
+  {"id": 42, "name": "Student 42", "group": "Arts", "written": 25, "mcq": 0, "practical": 22, "total": 47},
+  {"id": 43, "name": "Student 43", "group": "Arts", "written": 27, "mcq": 0, "practical": 22, "total": 49},
+  {"id": 44, "name": "Student 44", "group": "Arts", "written": 13, "mcq": 0, "practical": 0, "total": 13},
+  {"id": 45, "name": "Student 45", "group": "Arts", "written": 15, "mcq": 0, "practical": 0, "total": 15},
+  {"id": 46, "name": "Student 46", "group": "Arts", "written": 21, "mcq": 0, "practical": 22, "total": 43},
+  {"id": 47, "name": "Student 47", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 48, "name": "Student 48", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
+  {"id": 49, "name": "Student 49", "group": "Arts", "written": 12, "mcq": 0, "practical": 0, "total": 12},
+  {"id": 50, "name": "Student 50", "group": "Arts", "written": 25, "mcq": 0, "practical": 22, "total": 47},
+  {"id": 51, "name": "Student 51", "group": "Arts", "written": 14, "mcq": 0, "practical": 0, "total": 14},
+  {"id": 52, "name": "Student 52", "group": "Arts", "written": 17, "mcq": 0, "practical": 22, "total": 39}
+];
+
+        // Global variables
+        let currentChart = null;
+        let passFailChart = null;
+        let currentGroupFilter = 'all';
+        
+        // DOM elements
+        const chartTypeSelect = document.getElementById('chartType');
+        const sortOrderSelect = document.getElementById('sortOrder');
+        const exportBtn = document.getElementById('exportBtn');
+        const groupFilters = document.querySelectorAll('.group-btn');
+        const statsContainer = document.getElementById('statsContainer');
+        const groupStatsContainer = document.getElementById('groupStatsContainer');
+        const failedStudentsContainer = document.getElementById('failedStudentsContainer');
+        const chartCanvas = document.getElementById('performanceChart');
+        const passFailCanvas = document.getElementById('passFailChart');
+        const themeToggle = document.getElementById('themeToggle');
+        
+        // Initialize the application
+        function init() {
+            chartTypeSelect.addEventListener('change', updateChart);
+            sortOrderSelect.addEventListener('change', updateChart);
+            exportBtn.addEventListener('click', exportChart);
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Add event listeners to group filters
+            groupFilters.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    groupFilters.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    currentGroupFilter = this.getAttribute('data-group');
+                    updateChart();
+                    updateStats();
+                    updateGroupStats();
+                    updateFailedStudents();
+                });
+            });
+            
+            // Load initial data
+            updateChart();
+            updateStats();
+            updateGroupStats();
+            updateFailedStudents();
+        }
+        
+        // Update the chart based on current selections
+        function updateChart() {
+            if (studentData.length === 0) return;
+            
+            // Filter data by group
+            let filteredData = studentData;
+            if (currentGroupFilter !== 'all') {
+                filteredData = studentData.filter(student => student.group === currentGroupFilter);
+            }
+            
+            // Sort data
+            const chartType = chartTypeSelect.value;
+            const sortOrder = sortOrderSelect.value;
+            
+            let sortedData = [...filteredData];
+            if (chartType === 'total') {
+                sortedData.sort((a, b) => sortOrder === 'desc' ? b.total - a.total : a.total - b.total);
+            } else if (chartType === 'written') {
+                sortedData.sort((a, b) => sortOrder === 'desc' ? b.written - a.written : a.written - b.written);
+            } else if (chartType === 'mcq') {
+                sortedData.sort((a, b) => sortOrder === 'desc' ? b.mcq - a.mcq : a.mcq - b.mcq);
+            } else if (chartType === 'practical') {
+                sortedData.sort((a, b) => sortOrder === 'desc' ? b.practical - a.practical : a.practical - b.practical);
+            }
+            
+            // Limit to top 30 for better visualization
+            if (sortedData.length > 30) {
+                sortedData = sortedData.slice(0, 30);
+            }
+            
+            // Prepare chart data
+            const labels = sortedData.map(student => student.name);
+            let data = [];
+            let backgroundColor = [];
+            let borderColor = [];
+            let chartLabel = '';
+            
+            if (chartType === 'total') {
+                data = sortedData.map(student => student.total);
+                chartLabel = 'Total Score';
+                backgroundColor = sortedData.map(student => {
+                    if (student.total >= 60) return 'rgba(46, 204, 113, 0.7)';
+                    if (student.total >= 40) return 'rgba(241, 196, 15, 0.7)';
+                    return 'rgba(231, 76, 60, 0.7)';
+                });
+                borderColor = sortedData.map(student => {
+                    if (student.total >= 60) return 'rgba(46, 204, 113, 1)';
+                    if (student.total >= 40) return 'rgba(241, 196, 15, 1)';
+                    return 'rgba(231, 76, 60, 1)';
+                });
+            } else if (chartType === 'written') {
+                data = sortedData.map(student => student.written);
+                chartLabel = 'Written Exam Score';
+                // Highlight students with written marks < 17 in red
+                backgroundColor = sortedData.map(student => {
+                    if (student.written < 17) return 'rgba(231, 76, 60, 0.7)'; // Red for fail
+                    if (student.written >= 40) return 'rgba(52, 152, 219, 0.7)';
+                    if (student.written >= 20) return 'rgba(155, 89, 182, 0.7)';
+                    return 'rgba(149, 165, 166, 0.7)';
+                });
+                borderColor = sortedData.map(student => {
+                    if (student.written < 17) return 'rgba(231, 76, 60, 1)'; // Red for fail
+                    if (student.written >= 40) return 'rgba(52, 152, 219, 1)';
+                    if (student.written >= 20) return 'rgba(155, 89, 182, 1)';
+                    return 'rgba(149, 165, 166, 1)';
+                });
+            } else if (chartType === 'mcq') {
+                data = sortedData.map(student => student.mcq);
+                chartLabel = 'MCQ Score (out of 20)';
+                backgroundColor = sortedData.map(student => {
+                    if (student.mcq >= 16) return 'rgba(46, 204, 113, 0.7)';
+                    if (student.mcq >= 10) return 'rgba(241, 196, 15, 0.7)';
+                    return 'rgba(231, 76, 60, 0.7)';
+                });
+                borderColor = sortedData.map(student => {
+                    if (student.mcq >= 16) return 'rgba(46, 204, 113, 1)';
+                    if (student.mcq >= 10) return 'rgba(241, 196, 15, 1)';
+                    return 'rgba(231, 76, 60, 1)';
+                });
+            } else if (chartType === 'practical') {
+                data = sortedData.map(student => student.practical);
+                chartLabel = 'Practical Exam Score';
+                backgroundColor = sortedData.map(student => {
+                    if (student.practical >= 20) return 'rgba(230, 126, 34, 0.7)';
+                    if (student.practical >= 10) return 'rgba(243, 156, 18, 0.7)';
+                    return 'rgba(211, 84, 0, 0.7)';
+                });
+                borderColor = sortedData.map(student => {
+                    if (student.practical >= 20) return 'rgba(230, 126, 34, 1)';
+                    if (student.practical >= 10) return 'rgba(243, 156, 18, 1)';
+                    return 'rgba(211, 84, 0, 1)';
+                });
+            }
+            
+            // Destroy previous chart if exists
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            // Create new chart
+            const ctx = chartCanvas.getContext('2d');
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: chartLabel,
+                        data: data,
+                        backgroundColor: backgroundColor,
+                        borderColor: borderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            },
+                            grid: {
+                                color: 'rgba(128, 128, 128, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Students'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                color: 'rgba(128, 128, 128, 0.8)'
+                            },
+                            grid: {
+                                color: 'rgba(128, 128, 128, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: 'rgba(128, 128, 128, 0.8)'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const student = sortedData[context.dataIndex];
+                                    let tooltipText = `Group: ${student.group}`;
+                                    // Add fail warning for written marks < 17
+                                    if (chartType === 'written' && student.written < 17) {
+                                        tooltipText += '\n❌ Failed (Written < 17)';
+                                    }
+                                    return tooltipText;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'barValueLabels',
+                    afterDatasetsDraw: function(chart, args, options) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach((dataset, datasetIndex) => {
+                            const meta = chart.getDatasetMeta(datasetIndex);
+                            if (!meta.hidden) {
+                                meta.data.forEach((bar, index) => {
+                                    const dataValue = dataset.data[index];
+                                    // Only show value if it's not 0
+                                    if (dataValue !== 0) {
+                                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--heading-color');
+                                        ctx.font = 'bold 12px Arial';
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'bottom';
+                                        
+                                        // Position the label above the bar
+                                        const xPos = bar.x;
+                                        const yPos = bar.y - 5;
+                                        
+                                        // Add a subtle background for better readability
+                                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--container-bg');
+                                        const textWidth = ctx.measureText(dataValue).width;
+                                        ctx.fillRect(
+                                            xPos - textWidth/2 - 3, 
+                                            yPos - 12, 
+                                            textWidth + 6, 
+                                            16
+                                        );
+                                        
+                                        // Draw the text
+                                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--heading-color');
+                                        ctx.fillText(dataValue, xPos, yPos);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }]
+            });
+        }
+        
+        // Update statistics
+        function updateStats() {
+            if (studentData.length === 0) return;
+            
+            // Filter data by group
+            let filteredData = studentData;
+            if (currentGroupFilter !== 'all') {
+                filteredData = studentData.filter(student => student.group === currentGroupFilter);
+            }
+            
+            // Calculate statistics
+            const totalStudents = filteredData.length;
+            const absentStudents = filteredData.filter(student => student.written === 0 && student.mcq === 0 && student.practical === 0).length;
+            const failedStudents = filteredData.filter(student => student.written < 17 && !(student.written === 0 && student.mcq === 0 && student.practical === 0)).length;
+            const passedStudents = totalStudents - absentStudents - failedStudents;
+            const passRate = totalStudents > 0 ? ((passedStudents / (totalStudents - absentStudents)) * 100).toFixed(1) : 0;
+            const failRate = totalStudents > 0 ? ((failedStudents / (totalStudents - absentStudents)) * 100).toFixed(1) : 0;
+            
+            // Update stats container
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalStudents}</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${absentStudents}</div>
+                    <div class="stat-label">Absent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--danger)">${failedStudents}</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--success)">${passedStudents}</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--success)">${passRate}%</div>
+                    <div class="stat-label">Pass Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--danger)">${failRate}%</div>
+                    <div class="stat-label">Fail Rate</div>
+                </div>
+            `;
+        }
+        
+        // Update group-wise pass/fail statistics
+        function updateGroupStats() {
+            if (studentData.length === 0) return;
+            
+            // Get unique groups
+            const groups = [...new Set(studentData.map(student => student.group))];
+            
+            // Calculate pass/fail for each group
+            const groupStats = groups.map(group => {
+                const groupStudents = studentData.filter(student => student.group === group);
+                const totalStudents = groupStudents.length;
+                const absentStudents = groupStudents.filter(student => student.written === 0 && student.mcq === 0 && student.practical === 0).length;
+                const failedStudents = groupStudents.filter(student => student.written < 17 && !(student.written === 0 && student.mcq === 0 && student.practical === 0)).length;
+                const passedStudents = totalStudents - absentStudents - failedStudents;
+                const passRate = totalStudents > 0 ? ((passedStudents / (totalStudents - absentStudents)) * 100).toFixed(1) : 0;
+                const failRate = totalStudents > 0 ? ((failedStudents / (totalStudents - absentStudents)) * 100).toFixed(1) : 0;
+                
+                return {
+                    group,
+                    totalStudents,
+                    absentStudents,
+                    failedStudents,
+                    passedStudents,
+                    passRate,
+                    failRate
+                };
+            });
+            
+            // Update group stats container
+            groupStatsContainer.innerHTML = groupStats.map(stat => `
+                <div class="group-stat-card">
+                    <div class="group-stat-header">
+                        <span class="group-name">${stat.group}</span>
+                        <span>Total: ${stat.totalStudents}</span>
+                    </div>
+                    <div>Absent: ${stat.absentStudents}</div>
+                    <div class="pass-fail-stats">
+                        <div class="pass-count">
+                            <div class="stat-value">${stat.passedStudents}</div>
+                            <div class="stat-label">Passed (${stat.passRate}%)</div>
+                        </div>
+                        <div class="fail-count">
+                            <div class="stat-value">${stat.failedStudents}</div>
+                            <div class="stat-label">Failed (${stat.failRate}%)</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Update pass/fail chart
+            updatePassFailChart(groupStats);
+        }
+        
+        // Update pass/fail chart
+        function updatePassFailChart(groupStats) {
+            if (passFailChart) {
+                passFailChart.destroy();
+            }
+            
+            const ctx = passFailCanvas.getContext('2d');
+            passFailChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: groupStats.map(stat => stat.group),
+                    datasets: [
+                        {
+                            label: 'Passed',
+                            data: groupStats.map(stat => stat.passedStudents),
+                            backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Failed',
+                            data: groupStats.map(stat => stat.failedStudents),
+                            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Students'
+                            },
+                            grid: {
+                                color: 'rgba(128, 128, 128, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Groups'
+                            },
+                            grid: {
+                                color: 'rgba(128, 128, 128, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: 'rgba(128, 128, 128, 0.8)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update failed students list
+        function updateFailedStudents() {
+            if (studentData.length === 0) return;
+            
+            // Filter data by group
+            let filteredData = studentData;
+            if (currentGroupFilter !== 'all') {
+                filteredData = studentData.filter(student => student.group === currentGroupFilter);
+            }
+            
+            // Get failed students (written < 17 and not absent)
+            const failedStudents = filteredData.filter(student => 
+                student.written < 17 && !(student.written === 0 && student.mcq === 0 && student.practical === 0)
+            );
+            
+            // Update failed students container
+            if (failedStudents.length > 0) {
+                failedStudentsContainer.innerHTML = failedStudents.map(student => `
+                    <div class="failed-student">
+                        <strong>${student.name}</strong><br>
+                        Group: ${student.group}<br>
+                        Written: ${student.written}<br>
+                        MCQ: ${student.mcq}<br>
+                        Practical: ${student.practical}<br>
+                        Total: ${student.total}
+                    </div>
+                `).join('');
+            } else {
+                failedStudentsContainer.innerHTML = '<div class="failed-student">No failed students in this group</div>';
+            }
+        }
+        
+        // Export chart as image
+        function exportChart() {
+            if (currentChart) {
+                const link = document.createElement('a');
+                link.download = 'student-performance-chart.png';
+                link.href = chartCanvas.toDataURL('image/png');
+                link.click();
+            }
+        }
+        
+        // Toggle dark/light mode
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            
+            // Update charts to reflect theme change
+            if (currentChart) {
+                currentChart.update();
+            }
+            if (passFailChart) {
+                passFailChart.update();
+            }
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
