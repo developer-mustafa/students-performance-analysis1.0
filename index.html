@@ -1,37 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Performance Dashboard</title>
+    <title>শিক্ষার্থীদের পারফর্ম্যান্স ড্যাশবোর্ড</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --success: #4cc9f0;
+        --danger: #f72585;
+        --warning: #f8961e;
+        --info: #4895ef;
+        --light: #f8f9fa;
+        --dark: #212529;
         --bg-color: #f5f7fa;
         --container-bg: white;
         --text-color: #333;
         --heading-color: #2c3e50;
         --border-color: #ddd;
         --card-bg: #f8f9fa;
-        --primary: #3498db;
-        --success: #2ecc71;
-        --danger: #e74c3c;
-        --warning: #f39c12;
         --shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         --card-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        --header-height: 80px;
+        --sidebar-width: 250px;
       }
 
       .dark-mode {
-        --bg-color: #1a1a1a;
-        --container-bg: #2d2d2d;
+        --primary: #5a70f0;
+        --secondary: #4f47d4;
+        --success: #5dd3ff;
+        --danger: #ff4d94;
+        --warning: #ffaa4d;
+        --info: #5da5ff;
+        --light: #343a40;
+        --dark: #f8f9fa;
+        --bg-color: #121212;
+        --container-bg: #1e1e1e;
         --text-color: #e0e0e0;
-        --heading-color: #f0f0f0;
+        --heading-color: #ffffff;
         --border-color: #444;
-        --card-bg: #3a3a3a;
-        --primary: #4a9fe3;
-        --success: #27ae60;
-        --danger: #c0392b;
-        --warning: #d68910;
+        --card-bg: #2d2d2d;
         --shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         --card-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
       }
@@ -40,7 +51,7 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Segoe UI', 'SolaimanLipi', Tahoma, Geneva, Verdana, sans-serif;
         transition: background-color 0.3s, color 0.3s;
       }
 
@@ -48,41 +59,128 @@
         background-color: var(--bg-color);
         color: var(--text-color);
         line-height: 1.6;
+        padding: 0;
+        direction: ltr;
+      }
+
+      .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* সাইডবার স্টাইল */
+      .sidebar {
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 20px 0;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar-header {
+        padding: 0 20px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .sidebar-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+      }
+
+      .sidebar-header p {
+        opacity: 0.8;
+        font-size: 0.9rem;
+      }
+
+      .sidebar-menu {
+        list-style: none;
+      }
+
+      .sidebar-menu li {
+        margin-bottom: 5px;
+      }
+
+      .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu a.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left: 4px solid white;
+      }
+
+      .sidebar-menu i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+
+      /* মূল কন্টেন্ট স্টাইল */
+      .main-content {
+        flex: 1;
+        margin-left: var(--sidebar-width);
         padding: 20px;
       }
 
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
+      /* হেডার স্টাইল */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         background-color: var(--container-bg);
+        padding: 15px 25px;
         border-radius: 10px;
-        box-shadow: var(--shadow);
-        padding: 30px;
-        position: relative;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 25px;
       }
 
-      h1 {
-        text-align: center;
-        margin-bottom: 30px;
+      .header h1 {
         color: var(--heading-color);
-        border-bottom: 2px solid var(--primary);
-        padding-bottom: 10px;
-      }
-
-      h2 {
-        margin-bottom: 15px;
-        color: var(--heading-color);
+        font-size: 1.8rem;
       }
 
       .header-controls {
         display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      /* কার্ড স্টাইল */
+      .card {
+        background-color: var(--container-bg);
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        padding: 20px;
+        margin-bottom: 25px;
+      }
+
+      .card-header {
+        display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
       }
 
+      .card-title {
+        font-size: 1.3rem;
+        color: var(--heading-color);
+        font-weight: 600;
+      }
+
+      /* কন্ট্রোল স্টাইল */
       .controls {
         display: flex;
         flex-wrap: wrap;
@@ -106,18 +204,23 @@
         background-color: var(--primary);
         color: white;
         border: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       button:hover {
-        opacity: 0.9;
+        background-color: var(--secondary);
+        transform: translateY(-2px);
       }
 
       select:focus,
       button:focus {
         outline: none;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+        box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
       }
 
+      /* চার্ট কন্টেইনার */
       .chart-container {
         position: relative;
         height: 500px;
@@ -128,26 +231,33 @@
         box-shadow: var(--card-shadow);
       }
 
+      /* পরিসংখ্যান কার্ড */
       .stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 15px;
-        margin-top: 20px;
+        margin-bottom: 25px;
       }
 
       .stat-card {
         background-color: var(--card-bg);
-        padding: 15px;
-        border-radius: 8px;
+        padding: 20px;
+        border-radius: 10px;
         text-align: center;
         border-left: 4px solid var(--primary);
         box-shadow: var(--card-shadow);
+        transition: transform 0.3s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
       }
 
       .stat-value {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: bold;
         color: var(--heading-color);
+        margin-bottom: 5px;
       }
 
       .stat-label {
@@ -156,6 +266,7 @@
         opacity: 0.8;
       }
 
+      /* গ্রুপ ফিল্টার */
       .group-filters {
         display: flex;
         gap: 10px;
@@ -170,6 +281,9 @@
         cursor: pointer;
         transition: all 0.3s;
         color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
 
       .group-btn.active {
@@ -177,14 +291,46 @@
         color: white;
       }
 
-      .group-stats {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: var(--card-bg);
-        border-radius: 8px;
-        box-shadow: var(--card-shadow);
+      /* থিম টগল */
+      .theme-toggle {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--text-color);
+        padding: 8px;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
+      .theme-toggle:hover {
+        background-color: var(--card-bg);
+      }
+
+      /* ফেল করা শিক্ষার্থীদের তালিকা */
+      .failed-students {
+        margin-top: 30px;
+      }
+
+      .failed-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .failed-student {
+        background-color: rgba(247, 37, 133, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid var(--danger);
+      }
+
+      /* গ্রুপ পরিসংখ্যান */
       .group-stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -193,8 +339,8 @@
       }
 
       .group-stat-card {
-        background-color: var(--container-bg);
-        padding: 15px;
+        background-color: var(--card-bg);
+        padding: 20px;
         border-radius: 8px;
         box-shadow: var(--card-shadow);
       }
@@ -222,61 +368,56 @@
       .pass-count,
       .fail-count {
         text-align: center;
-        padding: 8px;
+        padding: 10px;
         border-radius: 5px;
         width: 48%;
       }
 
       .pass-count {
-        background-color: rgba(46, 204, 113, 0.2);
+        background-color: rgba(76, 201, 240, 0.2);
         color: var(--success);
       }
 
       .fail-count {
-        background-color: rgba(231, 76, 60, 0.2);
+        background-color: rgba(247, 37, 133, 0.2);
         color: var(--danger);
       }
 
-      .pass-fail-chart-container {
-        position: relative;
-        height: 300px;
-        margin-top: 20px;
-      }
+      /* রেস্পন্সিভ ডিজাইন */
+      @media (max-width: 992px) {
+        .sidebar {
+          width: 70px;
+          overflow: visible;
+        }
 
-      .theme-toggle {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: var(--text-color);
-      }
+        .sidebar-header h2,
+        .sidebar-header p,
+        .sidebar-menu span {
+          display: none;
+        }
 
-      .failed-students {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: var(--card-bg);
-        border-radius: 8px;
-        box-shadow: var(--card-shadow);
-      }
+        .sidebar-menu a {
+          justify-content: center;
+          padding: 15px;
+        }
 
-      .failed-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 10px;
-        margin-top: 15px;
-      }
+        .sidebar-menu i {
+          margin-right: 0;
+          font-size: 1.2rem;
+        }
 
-      .failed-student {
-        background-color: rgba(231, 76, 60, 0.1);
-        padding: 10px;
-        border-radius: 5px;
-        border-left: 3px solid var(--danger);
+        .main-content {
+          margin-left: 70px;
+        }
       }
 
       @media (max-width: 768px) {
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
         .controls {
           flex-direction: column;
           align-items: stretch;
@@ -286,193 +427,230 @@
           height: 400px;
         }
 
-        .pass-fail-chart-container {
-          height: 250px;
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 576px) {
+        .stats {
+          grid-template-columns: 1fr;
         }
 
-        .header-controls {
-          flex-direction: column;
-          align-items: flex-start;
+        .group-stats-grid {
+          grid-template-columns: 1fr;
         }
+
+        .failed-list {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* অ্যানিমেশন */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-out;
+      }
+
+      /* স্ক্রোলবার স্টাইল */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--card-bg);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary);
+      }
+
+      .container{
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <button class="theme-toggle" id="themeToggle">🌙</button>
-      <h1>Student Performance Dashboard (Mustafa sir)</h1>
+    <div class="dashboard-container">
+      <!-- মূল কন্টেন্ট -->
+      <div class="container mx-auto">
+        <!-- হেডার -->
+        <div class="header">
+          <h1>শিক্ষার্থীদের পারফর্ম্যান্স ড্যাশবোর্ড</h1>
+          <div class="header-controls">
+            <button class="theme-toggle" id="themeToggle">
+              <i class="fas fa-moon"></i>
+            </button>
+            <button id="exportBtn">
+              <i class="fas fa-download"></i>
+              রিপোর্ট ডাউনলোড
+            </button>
+          </div>
+        </div>
+       
 
-      <div class="header-controls">
-        <div class="controls">
-          <select id="chartType">
-            <option value="total">Total Scores Ranking</option>
-            <option value="written">Written Exam Scores</option>
-            <option value="mcq">MCQ Scores</option>
-            <option value="practical">Practical Exam Scores</option>
-          </select>
-          <select id="sortOrder">
-            <option value="desc">Highest to Lowest</option>
-            <option value="asc">Lowest to Highest</option>
-          </select>
-          <button id="exportBtn">Export Chart</button>
+        <!-- পরিসংখ্যান কার্ড -->
+        <div class="stats" id="statsContainer">
+          <!-- পরিসংখ্যান এখানে দেখানো হবে -->
         </div>
 
-        <div class="group-filters">
-          <div class="group-btn active" data-group="all">All Groups</div>
-          <div class="group-btn" data-group="Science">Science</div>
-          <div class="group-btn" data-group="Studies">Studies</div>
-          <div class="group-btn" data-group="Arts">Arts</div>
+        <!-- ফিল্টার এবং কন্ট্রোল -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">ফিল্টার এবং সাজানোর অপশন</h2>
+          </div>
+          <div class="controls">
+            <select id="chartType">
+              <option value="total">মোট স্কোর অনুসারে</option>
+              <option value="written">লিখিত পরীক্ষার স্কোর</option>
+              <option value="mcq">এমসিকিউ স্কোর</option>
+              <option value="practical">প্র্যাকটিক্যাল পরীক্ষার স্কোর</option>
+            </select>
+            <select id="sortOrder">
+              <option value="desc">সর্বোচ্চ থেকে সর্বনিম্ন</option>
+              <option value="asc">সর্বনিম্ন থেকে সর্বোচ্চ</option>
+            </select>
+
+            <div class="group-filters">
+              <div class="group-btn active" data-group="all">
+                <i class="fas fa-users"></i>
+                সব গ্রুপ
+              </div>
+              <div class="group-btn" data-group="Science">
+                <i class="fas fa-flask"></i>
+                বিজ্ঞান গ্রুপ
+              </div>
+              <div class="group-btn" data-group="Studies">
+                <i class="fas fa-book"></i>
+                ব্যবসায় গ্রুপ
+              </div>
+              <div class="group-btn" data-group="Arts">
+                <i class="fas fa-palette"></i>
+                মানবিক গ্রুপ
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="stats" id="statsContainer">
-        <!-- Statistics will be populated here -->
-      </div>
-
-      <div class="chart-container">
-        <canvas id="performanceChart"></canvas>
-      </div>
-
-      <div class="failed-students">
-        <h2>Failed Students (Written < 17)</h2>
-        <div class="failed-list" id="failedStudentsContainer">
-          <!-- Failed students will be populated here -->
-        </div>
-      </div>
-
-      <div class="group-stats">
-        <h2>Group-wise Pass/Fail Statistics</h2>
-        <div class="group-stats-grid" id="groupStatsContainer">
-          <!-- Group statistics will be populated here -->
+        <!-- প্রধান চার্ট -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title" id="chartTitle">মোট স্কোর র‌্যাঙ্কিং</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
         </div>
 
-        <div class="pass-fail-chart-container">
-          <canvas id="passFailChart"></canvas>
+        <!-- ফেল করা শিক্ষার্থীরা -->
+        <div class="card failed-students">
+          <div class="card-header">
+            <h2 class="card-title">ফেল করা শিক্ষার্থী (লিখিত < ১৭)</h2>
+          </div>
+          <div class="failed-list" id="failedStudentsContainer">
+            <!-- ফেল করা শিক্ষার্থীরা এখানে দেখানো হবে -->
+          </div>
+        </div>
+
+        <!-- গ্রুপভিত্তিক পরিসংখ্যান -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">গ্রুপভিত্তিক পাস/ফেল পরিসংখ্যান</h2>
+          </div>
+          <div class="group-stats-grid" id="groupStatsContainer">
+            <!-- গ্রুপ পরিসংখ্যান এখানে দেখানো হবে -->
+          </div>
+
+          <div class="chart-container" style="height: 300px; margin-top: 20px">
+            <canvas id="passFailChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
 
     <script>
-      //    const studentData = [
-      //   {"id": 1, "name": "Student 1", "group": "Science", "written": 43, "mcq": 0, "practical": 22, "total": 65},
-      //   {"id": 2, "name": "Student 2", "group": "Science", "written": 40, "mcq": 0, "practical": 22, "total": 62},
-      //   {"id": 3, "name": "Student 3", "group": "Science", "written": 42, "mcq": 0, "practical": 22, "total": 64},
-      //   {"id": 4, "name": "Student 4", "group": "Science", "written": 44, "mcq": 0, "practical": 22, "total": 66},
-      //   {"id": 5, "name": "Student 5", "group": "Science", "written": 34, "mcq": 0, "practical": 22, "total": 56},
-      //   {"id": 6, "name": "Student 6", "group": "Science", "written": 7, "mcq": 0, "practical": 0, "total": 7},
-      //   {"id": 7, "name": "Student 7", "group": "Science", "written": 41, "mcq": 0, "practical": 22, "total": 63},
-
-      //   {"id": 8, "name": "Student 8", "group": "Studies", "written": 30, "mcq": 0, "practical": 22, "total": 52},
-      //   {"id": 9, "name": "Student 9", "group": "Studies", "written": 43, "mcq": 0, "practical": 22, "total": 65},
-      //   {"id": 10, "name": "Student 10", "group": "Studies", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 11, "name": "Student 11", "group": "Studies", "written": 42, "mcq": 0, "practical": 22, "total": 64},
-      //   {"id": 12, "name": "Student 12", "group": "Studies", "written": 41, "mcq": 0, "practical": 22, "total": 63},
-      //   {"id": 13, "name": "Student 13", "group": "Studies", "written": 37, "mcq": 0, "practical": 22, "total": 59},
-      //   {"id": 14, "name": "Student 14", "group": "Studies", "written": 36, "mcq": 0, "practical": 22, "total": 58},
-      //   {"id": 15, "name": "Student 15", "group": "Studies", "written": 38, "mcq": 0, "practical": 22, "total": 60},
-      //   {"id": 16, "name": "Student 16", "group": "Studies", "written": 28, "mcq": 0, "practical": 22, "total": 50},
-      //   {"id": 17, "name": "Student 17", "group": "Studies", "written": 28, "mcq": 0, "practical": 22, "total": 50},
-      //   {"id": 18, "name": "Student 18", "group": "Studies", "written": 25, "mcq": 0, "practical": 22, "total": 47},
-      //   {"id": 19, "name": "Student 19", "group": "Studies", "written": 24, "mcq": 0, "practical": 22, "total": 46},
-
-      //   {"id": 20, "name": "Student 20", "group": "Arts", "written": 50, "mcq": 0, "practical": 22, "total": 72},
-      //   {"id": 21, "name": "Student 21", "group": "Arts", "written": 47, "mcq": 0, "practical": 22, "total": 69},
-      //   {"id": 22, "name": "Student 22", "group": "Arts", "written": 36, "mcq": 0, "practical": 22, "total": 58},
-      //   {"id": 23, "name": "Student 23", "group": "Arts", "written": 39, "mcq": 0, "practical": 22, "total": 61},
-      //   {"id": 24, "name": "Student 24", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 25, "name": "Student 25", "group": "Arts", "written": 42, "mcq": 0, "practical": 22, "total": 64},
-      //   {"id": 26, "name": "Student 26", "group": "Arts", "written": 38, "mcq": 0, "practical": 22, "total": 60},
-      //   {"id": 27, "name": "Student 27", "group": "Arts", "written": 26, "mcq": 0, "practical": 22, "total": 48},
-      //   {"id": 28, "name": "Student 28", "group": "Arts", "written": 44, "mcq": 0, "practical": 22, "total": 66},
-      //   {"id": 29, "name": "Student 29", "group": "Arts", "written": 35, "mcq": 0, "practical": 22, "total": 57},
-      //   {"id": 30, "name": "Student 30", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 31, "name": "Student 31", "group": "Arts", "written": 38, "mcq": 0, "practical": 22, "total": 60},
-      //   {"id": 32, "name": "Student 32", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 33, "name": "Student 33", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 34, "name": "Student 34", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 35, "name": "Student 35", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 36, "name": "Student 36", "group": "Arts", "written": 32, "mcq": 0, "practical": 22, "total": 54},
-      //   {"id": 37, "name": "Student 37", "group": "Arts", "written": 24, "mcq": 0, "practical": 22, "total": 46},
-      //   {"id": 38, "name": "Student 38", "group": "Arts", "written": 32, "mcq": 0, "practical": 22, "total": 54},
-      //   {"id": 39, "name": "Student 39", "group": "Arts", "written": 35, "mcq": 0, "practical": 22, "total": 57},
-      //   {"id": 40, "name": "Student 40", "group": "Arts", "written": 15, "mcq": 0, "practical": 0, "total": 15},
-      //   {"id": 41, "name": "Student 41", "group": "Arts", "written": 31, "mcq": 0, "practical": 22, "total": 53},
-      //   {"id": 42, "name": "Student 42", "group": "Arts", "written": 25, "mcq": 0, "practical": 22, "total": 47},
-      //   {"id": 43, "name": "Student 43", "group": "Arts", "written": 27, "mcq": 0, "practical": 22, "total": 49},
-      //   {"id": 44, "name": "Student 44", "group": "Arts", "written": 13, "mcq": 0, "practical": 0, "total": 13},
-      //   {"id": 45, "name": "Student 45", "group": "Arts", "written": 15, "mcq": 0, "practical": 0, "total": 15},
-      //   {"id": 46, "name": "Student 46", "group": "Arts", "written": 21, "mcq": 0, "practical": 22, "total": 43},
-      //   {"id": 47, "name": "Student 47", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 48, "name": "Student 48", "group": "Arts", "written": 0, "mcq": 0, "practical": 0, "total": 0},
-      //   {"id": 49, "name": "Student 49", "group": "Arts", "written": 12, "mcq": 0, "practical": 0, "total": 12},
-      //   {"id": 50, "name": "Student 50", "group": "Arts", "written": 25, "mcq": 0, "practical": 22, "total": 47},
-      //   {"id": 51, "name": "Student 51", "group": "Arts", "written": 14, "mcq": 0, "practical": 0, "total": 14},
-      //   {"id": 52, "name": "Student 52", "group": "Arts", "written": 17, "mcq": 0, "practical": 22, "total": 39}
-      // ];
-
+      // শিক্ষার্থীদের ডেটা
       const studentData = [
-        { id: 1, name: 'Student 1', group: 'Science', written: 43, mcq: 20, practical: 22, total: 85 },
-        { id: 2, name: 'Student 2', group: 'Science', written: 40, mcq: 20, practical: 22, total: 82 },
-        { id: 3, name: 'Student 3', group: 'Science', written: 42, mcq: 20, practical: 22, total: 84 },
-        { id: 4, name: 'Student 4', group: 'Science', written: 44, mcq: 20, practical: 22, total: 86 },
-        { id: 5, name: 'Student 5', group: 'Science', written: 34, mcq: 20, practical: 22, total: 76 },
-        { id: 6, name: 'Student 6', group: 'Science', written: 7, mcq: 20, practical: 0, total: 27 },
-        { id: 7, name: 'Student 7', group: 'Science', written: 41, mcq: 20, practical: 22, total: 83 },
+        { id: 1, name: 'শিক্ষার্থী ১', group: 'Science', written: 43, mcq: 20, practical: 22, total: 85 },
+        { id: 2, name: 'শিক্ষার্থী ২', group: 'Science', written: 40, mcq: 20, practical: 22, total: 82 },
+        { id: 3, name: 'শিক্ষার্থী ৩', group: 'Science', written: 42, mcq: 20, practical: 22, total: 84 },
+        { id: 4, name: 'শিক্ষার্থী ৪', group: 'Science', written: 44, mcq: 20, practical: 22, total: 86 },
+        { id: 5, name: 'শিক্ষার্থী ৫', group: 'Science', written: 34, mcq: 20, practical: 22, total: 76 },
+        { id: 6, name: 'শিক্ষার্থী ৬', group: 'Science', written: 7, mcq: 20, practical: 0, total: 27 },
+        { id: 7, name: 'শিক্ষার্থী ৭', group: 'Science', written: 41, mcq: 20, practical: 22, total: 83 },
 
-        { id: 8, name: 'Student 8', group: 'Studies', written: 30, mcq: 20, practical: 22, total: 72 },
-        { id: 9, name: 'Student 9', group: 'Studies', written: 43, mcq: 20, practical: 22, total: 85 },
-        { id: 10, name: 'Student 10', group: 'Studies', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 11, name: 'Student 11', group: 'Studies', written: 42, mcq: 20, practical: 22, total: 84 },
-        { id: 12, name: 'Student 12', group: 'Studies', written: 41, mcq: 20, practical: 22, total: 83 },
-        { id: 13, name: 'Student 13', group: 'Studies', written: 37, mcq: 20, practical: 22, total: 79 },
-        { id: 14, name: 'Student 14', group: 'Studies', written: 36, mcq: 20, practical: 22, total: 78 },
-        { id: 15, name: 'Student 15', group: 'Studies', written: 38, mcq: 20, practical: 22, total: 80 },
-        { id: 16, name: 'Student 16', group: 'Studies', written: 28, mcq: 20, practical: 22, total: 70 },
-        { id: 17, name: 'Student 17', group: 'Studies', written: 28, mcq: 20, practical: 22, total: 70 },
-        { id: 18, name: 'Student 18', group: 'Studies', written: 25, mcq: 20, practical: 22, total: 67 },
-        { id: 19, name: 'Student 19', group: 'Studies', written: 24, mcq: 20, practical: 22, total: 66 },
+        { id: 8, name: 'শিক্ষার্থী ৮', group: 'Studies', written: 30, mcq: 20, practical: 22, total: 72 },
+        { id: 9, name: 'শিক্ষার্থী ৯', group: 'Studies', written: 43, mcq: 20, practical: 22, total: 85 },
+        { id: 10, name: 'শিক্ষার্থী ১০', group: 'Studies', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 11, name: 'শিক্ষার্থী ১১', group: 'Studies', written: 42, mcq: 20, practical: 22, total: 84 },
+        { id: 12, name: 'শিক্ষার্থী ১২', group: 'Studies', written: 41, mcq: 20, practical: 22, total: 83 },
+        { id: 13, name: 'শিক্ষার্থী ১৩', group: 'Studies', written: 37, mcq: 20, practical: 22, total: 79 },
+        { id: 14, name: 'শিক্ষার্থী ১৪', group: 'Studies', written: 36, mcq: 20, practical: 22, total: 78 },
+        { id: 15, name: 'শিক্ষার্থী ১৫', group: 'Studies', written: 38, mcq: 20, practical: 22, total: 80 },
+        { id: 16, name: 'শিক্ষার্থী ১৬', group: 'Studies', written: 28, mcq: 20, practical: 22, total: 70 },
+        { id: 17, name: 'শিক্ষার্থী ১৭', group: 'Studies', written: 28, mcq: 20, practical: 22, total: 70 },
+        { id: 18, name: 'শিক্ষার্থী ১৮', group: 'Studies', written: 25, mcq: 20, practical: 22, total: 67 },
+        { id: 19, name: 'শিক্ষার্থী ১৯', group: 'Studies', written: 24, mcq: 20, practical: 22, total: 66 },
 
-        { id: 20, name: 'Student 20', group: 'Arts', written: 50, mcq: 20, practical: 22, total: 92 },
-        { id: 21, name: 'Student 21', group: 'Arts', written: 47, mcq: 20, practical: 22, total: 89 },
-        { id: 22, name: 'Student 22', group: 'Arts', written: 36, mcq: 20, practical: 22, total: 78 },
-        { id: 23, name: 'Student 23', group: 'Arts', written: 39, mcq: 20, practical: 22, total: 81 },
-        { id: 24, name: 'Student 24', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 25, name: 'Student 25', group: 'Arts', written: 42, mcq: 20, practical: 22, total: 84 },
-        { id: 26, name: 'Student 26', group: 'Arts', written: 38, mcq: 20, practical: 22, total: 80 },
-        { id: 27, name: 'Student 27', group: 'Arts', written: 26, mcq: 20, practical: 22, total: 68 },
-        { id: 28, name: 'Student 28', group: 'Arts', written: 44, mcq: 20, practical: 22, total: 86 },
-        { id: 29, name: 'Student 29', group: 'Arts', written: 35, mcq: 20, practical: 22, total: 77 },
-        { id: 30, name: 'Student 30', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 31, name: 'Student 31', group: 'Arts', written: 38, mcq: 20, practical: 22, total: 80 },
-        { id: 32, name: 'Student 32', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 33, name: 'Student 33', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 34, name: 'Student 34', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 35, name: 'Student 35', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 36, name: 'Student 36', group: 'Arts', written: 32, mcq: 20, practical: 22, total: 74 },
-        { id: 37, name: 'Student 37', group: 'Arts', written: 24, mcq: 20, practical: 22, total: 66 },
-        { id: 38, name: 'Student 38', group: 'Arts', written: 32, mcq: 20, practical: 22, total: 74 },
-        { id: 39, name: 'Student 39', group: 'Arts', written: 35, mcq: 20, practical: 22, total: 77 },
-        { id: 40, name: 'Student 40', group: 'Arts', written: 15, mcq: 20, practical: 0, total: 35 },
-        { id: 41, name: 'Student 41', group: 'Arts', written: 31, mcq: 20, practical: 22, total: 73 },
-        { id: 42, name: 'Student 42', group: 'Arts', written: 25, mcq: 20, practical: 22, total: 67 },
-        { id: 43, name: 'Student 43', group: 'Arts', written: 27, mcq: 20, practical: 22, total: 69 },
-        { id: 44, name: 'Student 44', group: 'Arts', written: 13, mcq: 20, practical: 0, total: 33 },
-        { id: 45, name: 'Student 45', group: 'Arts', written: 15, mcq: 20, practical: 0, total: 35 },
-        { id: 46, name: 'Student 46', group: 'Arts', written: 21, mcq: 20, practical: 22, total: 63 },
-        { id: 47, name: 'Student 47', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 48, name: 'Student 48', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
-        { id: 49, name: 'Student 49', group: 'Arts', written: 12, mcq: 20, practical: 0, total: 32 },
-        { id: 50, name: 'Student 50', group: 'Arts', written: 25, mcq: 20, practical: 22, total: 67 },
-        { id: 51, name: 'Student 51', group: 'Arts', written: 14, mcq: 20, practical: 0, total: 34 },
-        { id: 52, name: 'Student 52', group: 'Arts', written: 17, mcq: 20, practical: 22, total: 59 },
+        { id: 20, name: 'শিক্ষার্থী ২০', group: 'Arts', written: 50, mcq: 20, practical: 22, total: 92 },
+        { id: 21, name: 'শিক্ষার্থী ২১', group: 'Arts', written: 47, mcq: 20, practical: 22, total: 89 },
+        { id: 22, name: 'শিক্ষার্থী ২২', group: 'Arts', written: 36, mcq: 20, practical: 22, total: 78 },
+        { id: 23, name: 'শিক্ষার্থী ২৩', group: 'Arts', written: 39, mcq: 20, practical: 22, total: 81 },
+        { id: 24, name: 'শিক্ষার্থী ২৪', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 25, name: 'শিক্ষার্থী ২৫', group: 'Arts', written: 42, mcq: 20, practical: 22, total: 84 },
+        { id: 26, name: 'শিক্ষার্থী ২৬', group: 'Arts', written: 38, mcq: 20, practical: 22, total: 80 },
+        { id: 27, name: 'শিক্ষার্থী ২৭', group: 'Arts', written: 26, mcq: 20, practical: 22, total: 68 },
+        { id: 28, name: 'শিক্ষার্থী ২৮', group: 'Arts', written: 44, mcq: 20, practical: 22, total: 86 },
+        { id: 29, name: 'শিক্ষার্থী ২৯', group: 'Arts', written: 35, mcq: 20, practical: 22, total: 77 },
+        { id: 30, name: 'শিক্ষার্থী ৩০', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 31, name: 'শিক্ষার্থী ৩১', group: 'Arts', written: 38, mcq: 20, practical: 22, total: 80 },
+        { id: 32, name: 'শিক্ষার্থী ৩২', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 33, name: 'শিক্ষার্থী ৩৩', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 34, name: 'শিক্ষার্থী ৩৪', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 35, name: 'শিক্ষার্থী ৩৫', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 36, name: 'শিক্ষার্থী ৩৬', group: 'Arts', written: 32, mcq: 20, practical: 22, total: 74 },
+        { id: 37, name: 'শিক্ষার্থী ৩৭', group: 'Arts', written: 24, mcq: 20, practical: 22, total: 66 },
+        { id: 38, name: 'শিক্ষার্থী ৩৮', group: 'Arts', written: 32, mcq: 20, practical: 22, total: 74 },
+        { id: 39, name: 'শিক্ষার্থী ৩৯', group: 'Arts', written: 35, mcq: 20, practical: 22, total: 77 },
+        { id: 40, name: 'শিক্ষার্থী ৪০', group: 'Arts', written: 15, mcq: 20, practical: 0, total: 35 },
+        { id: 41, name: 'শিক্ষার্থী ৪১', group: 'Arts', written: 31, mcq: 20, practical: 22, total: 73 },
+        { id: 42, name: 'শিক্ষার্থী ৪২', group: 'Arts', written: 25, mcq: 20, practical: 22, total: 67 },
+        { id: 43, name: 'শিক্ষার্থী ৪৩', group: 'Arts', written: 27, mcq: 20, practical: 22, total: 69 },
+        { id: 44, name: 'শিক্ষার্থী ৪৪', group: 'Arts', written: 13, mcq: 20, practical: 0, total: 33 },
+        { id: 45, name: 'শিক্ষার্থী ৪৫', group: 'Arts', written: 15, mcq: 20, practical: 0, total: 35 },
+        { id: 46, name: 'শিক্ষার্থী ৪৬', group: 'Arts', written: 21, mcq: 20, practical: 22, total: 63 },
+        { id: 47, name: 'শিক্ষার্থী ৪৭', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 48, name: 'শিক্ষার্থী ৪৮', group: 'Arts', written: 0, mcq: 0, practical: 0, total: 0 },
+        { id: 49, name: 'শিক্ষার্থী ৪৯', group: 'Arts', written: 12, mcq: 20, practical: 0, total: 32 },
+        { id: 50, name: 'শিক্ষার্থী ৫০', group: 'Arts', written: 25, mcq: 20, practical: 22, total: 67 },
+        { id: 51, name: 'শিক্ষার্থী ৫১', group: 'Arts', written: 14, mcq: 20, practical: 0, total: 34 },
+        { id: 52, name: 'শিক্ষার্থী ৫২', group: 'Arts', written: 17, mcq: 20, practical: 22, total: 59 },
       ];
 
-      // Global variables
+      // গ্লোবাল ভেরিয়েবল
       let currentChart = null;
       let passFailChart = null;
       let currentGroupFilter = 'all';
+      let autoUpdateInterval = null;
 
-      // DOM elements
+      // DOM এলিমেন্ট
       const chartTypeSelect = document.getElementById('chartType');
       const sortOrderSelect = document.getElementById('sortOrder');
       const exportBtn = document.getElementById('exportBtn');
@@ -483,20 +661,21 @@
       const chartCanvas = document.getElementById('performanceChart');
       const passFailCanvas = document.getElementById('passFailChart');
       const themeToggle = document.getElementById('themeToggle');
+      const chartTitle = document.getElementById('chartTitle');
 
-      // Initialize the application
+      // অ্যাপ্লিকেশন ইনিশিয়ালাইজেশন
       function init() {
         chartTypeSelect.addEventListener('change', updateChart);
         sortOrderSelect.addEventListener('change', updateChart);
         exportBtn.addEventListener('click', exportChart);
         themeToggle.addEventListener('click', toggleTheme);
 
-        // Add event listeners to group filters
+        // গ্রুপ ফিল্টারে ইভেন্ট লিসেনার যোগ করুন
         groupFilters.forEach((btn) => {
           btn.addEventListener('click', function () {
-            // Remove active class from all buttons
+            // সব বাটন থেকে active ক্লাস সরান
             groupFilters.forEach((b) => b.classList.remove('active'));
-            // Add active class to clicked button
+            // ক্লিক করা বাটনে active ক্লাস যোগ করুন
             this.classList.add('active');
             currentGroupFilter = this.getAttribute('data-group');
             updateChart();
@@ -506,44 +685,51 @@
           });
         });
 
-        // Load initial data
+        // অটো আপডেট শুরু করুন
+        startAutoUpdate();
+
+        // প্রাথমিক ডেটা লোড করুন
         updateChart();
         updateStats();
         updateGroupStats();
         updateFailedStudents();
       }
 
-      // Update the chart based on current selections
+      // বর্তমান নির্বাচন অনুযায়ী চার্ট আপডেট করুন
       function updateChart() {
         if (studentData.length === 0) return;
 
-        // Filter data by group
+        // গ্রুপ দ্বারা ডেটা ফিল্টার করুন
         let filteredData = studentData;
         if (currentGroupFilter !== 'all') {
           filteredData = studentData.filter((student) => student.group === currentGroupFilter);
         }
 
-        // Sort data
+        // ডেটা সাজান
         const chartType = chartTypeSelect.value;
         const sortOrder = sortOrderSelect.value;
 
         let sortedData = [...filteredData];
         if (chartType === 'total') {
           sortedData.sort((a, b) => (sortOrder === 'desc' ? b.total - a.total : a.total - b.total));
+          chartTitle.textContent = 'মোট স্কোর র‌্যাঙ্কিং';
         } else if (chartType === 'written') {
           sortedData.sort((a, b) => (sortOrder === 'desc' ? b.written - a.written : a.written - b.written));
+          chartTitle.textContent = 'লিখিত পরীক্ষার স্কোর র‌্যাঙ্কিং';
         } else if (chartType === 'mcq') {
           sortedData.sort((a, b) => (sortOrder === 'desc' ? b.mcq - a.mcq : a.mcq - b.mcq));
+          chartTitle.textContent = 'এমসিকিউ স্কোর র‌্যাঙ্কিং';
         } else if (chartType === 'practical') {
           sortedData.sort((a, b) => (sortOrder === 'desc' ? b.practical - a.practical : a.practical - b.practical));
+          chartTitle.textContent = 'প্র্যাকটিক্যাল পরীক্ষার স্কোর র‌্যাঙ্কিং';
         }
 
-        // Limit to top 30 for better visualization
+        // ভাল ভিজুয়ালাইজেশনের জন্য শীর্ষ 30-এ সীমাবদ্ধ করুন
         if (sortedData.length > 30) {
           sortedData = sortedData.slice(0, 30);
         }
 
-        // Prepare chart data
+        // চার্ট ডেটা প্রস্তুত করুন
         const labels = sortedData.map((student) => student.name);
         let data = [];
         let backgroundColor = [];
@@ -552,49 +738,49 @@
 
         if (chartType === 'total') {
           data = sortedData.map((student) => student.total);
-          chartLabel = 'Total Score';
+          chartLabel = 'মোট স্কোর';
           backgroundColor = sortedData.map((student) => {
-            if (student.total >= 60) return 'rgba(46, 204, 113, 0.7)';
-            if (student.total >= 40) return 'rgba(241, 196, 15, 0.7)';
-            return 'rgba(231, 76, 60, 0.7)';
+            if (student.total >= 60) return 'rgba(76, 201, 240, 0.7)';
+            if (student.total >= 40) return 'rgba(248, 150, 30, 0.7)';
+            return 'rgba(247, 37, 133, 0.7)';
           });
           borderColor = sortedData.map((student) => {
-            if (student.total >= 60) return 'rgba(46, 204, 113, 1)';
-            if (student.total >= 40) return 'rgba(241, 196, 15, 1)';
-            return 'rgba(231, 76, 60, 1)';
+            if (student.total >= 60) return 'rgba(76, 201, 240, 1)';
+            if (student.total >= 40) return 'rgba(248, 150, 30, 1)';
+            return 'rgba(247, 37, 133, 1)';
           });
         } else if (chartType === 'written') {
           data = sortedData.map((student) => student.written);
-          chartLabel = 'Written Exam Score';
-          // Highlight students with written marks < 17 in red
+          chartLabel = 'লিখিত পরীক্ষার স্কোর';
+          // লিখিত মার্কস < 17 এমন শিক্ষার্থীদের লাল রঙে হাইলাইট করুন
           backgroundColor = sortedData.map((student) => {
-            if (student.written < 17) return 'rgba(231, 76, 60, 0.7)'; // Red for fail
-            if (student.written >= 40) return 'rgba(52, 152, 219, 0.7)';
+            if (student.written < 17) return 'rgba(247, 37, 133, 0.7)'; // ফেলের জন্য লাল
+            if (student.written >= 40) return 'rgba(67, 97, 238, 0.7)';
             if (student.written >= 20) return 'rgba(155, 89, 182, 0.7)';
             return 'rgba(149, 165, 166, 0.7)';
           });
           borderColor = sortedData.map((student) => {
-            if (student.written < 17) return 'rgba(231, 76, 60, 1)'; // Red for fail
-            if (student.written >= 40) return 'rgba(52, 152, 219, 1)';
+            if (student.written < 17) return 'rgba(247, 37, 133, 1)'; // ফেলের জন্য লাল
+            if (student.written >= 40) return 'rgba(67, 97, 238, 1)';
             if (student.written >= 20) return 'rgba(155, 89, 182, 1)';
             return 'rgba(149, 165, 166, 1)';
           });
         } else if (chartType === 'mcq') {
           data = sortedData.map((student) => student.mcq);
-          chartLabel = 'MCQ Score (out of 20)';
+          chartLabel = 'এমসিকিউ স্কোর (২০-এর মধ্যে)';
           backgroundColor = sortedData.map((student) => {
-            if (student.mcq >= 16) return 'rgba(46, 204, 113, 0.7)';
-            if (student.mcq >= 10) return 'rgba(241, 196, 15, 0.7)';
-            return 'rgba(231, 76, 60, 0.7)';
+            if (student.mcq >= 16) return 'rgba(76, 201, 240, 0.7)';
+            if (student.mcq >= 10) return 'rgba(248, 150, 30, 0.7)';
+            return 'rgba(247, 37, 133, 0.7)';
           });
           borderColor = sortedData.map((student) => {
-            if (student.mcq >= 16) return 'rgba(46, 204, 113, 1)';
-            if (student.mcq >= 10) return 'rgba(241, 196, 15, 1)';
-            return 'rgba(231, 76, 60, 1)';
+            if (student.mcq >= 16) return 'rgba(76, 201, 240, 1)';
+            if (student.mcq >= 10) return 'rgba(248, 150, 30, 1)';
+            return 'rgba(247, 37, 133, 1)';
           });
         } else if (chartType === 'practical') {
           data = sortedData.map((student) => student.practical);
-          chartLabel = 'Practical Exam Score';
+          chartLabel = 'প্র্যাকটিক্যাল পরীক্ষার স্কোর';
           backgroundColor = sortedData.map((student) => {
             if (student.practical >= 20) return 'rgba(230, 126, 34, 0.7)';
             if (student.practical >= 10) return 'rgba(243, 156, 18, 0.7)';
@@ -607,12 +793,12 @@
           });
         }
 
-        // Destroy previous chart if exists
+        // পূর্ববর্তী চার্ট ধ্বংস করুন যদি বিদ্যমান থাকে
         if (currentChart) {
           currentChart.destroy();
         }
 
-        // Create new chart
+        // নতুন চার্ট তৈরি করুন
         const ctx = chartCanvas.getContext('2d');
         currentChart = new Chart(ctx, {
           type: 'bar',
@@ -636,7 +822,7 @@
                 beginAtZero: true,
                 title: {
                   display: true,
-                  text: 'Score',
+                  text: 'স্কোর',
                 },
                 grid: {
                   color: 'rgba(128, 128, 128, 0.1)',
@@ -645,7 +831,7 @@
               x: {
                 title: {
                   display: true,
-                  text: 'Students',
+                  text: 'শিক্ষার্থীরা',
                 },
                 ticks: {
                   maxRotation: 45,
@@ -669,10 +855,10 @@
                 callbacks: {
                   afterLabel: function (context) {
                     const student = sortedData[context.dataIndex];
-                    let tooltipText = `Group: ${student.group}`;
-                    // Add fail warning for written marks < 17
+                    let tooltipText = `গ্রুপ: ${student.group}`;
+                    // লিখিত মার্কস < 17 এর জন্য ফেল সতর্কতা যোগ করুন
                     if (chartType === 'written' && student.written < 17) {
-                      tooltipText += '\n❌ Failed (Written < 17)';
+                      tooltipText += '\n❌ ফেল (লিখিত < ১৭)';
                     }
                     return tooltipText;
                   },
@@ -680,56 +866,20 @@
               },
             },
           },
-          plugins: [
-            {
-              id: 'barValueLabels',
-              afterDatasetsDraw: function (chart, args, options) {
-                const ctx = chart.ctx;
-                chart.data.datasets.forEach((dataset, datasetIndex) => {
-                  const meta = chart.getDatasetMeta(datasetIndex);
-                  if (!meta.hidden) {
-                    meta.data.forEach((bar, index) => {
-                      const dataValue = dataset.data[index];
-                      // Only show value if it's not 0
-                      if (dataValue !== 0) {
-                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--heading-color');
-                        ctx.font = 'bold 12px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'bottom';
-
-                        // Position the label above the bar
-                        const xPos = bar.x;
-                        const yPos = bar.y - 5;
-
-                        // Add a subtle background for better readability
-                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--container-bg');
-                        const textWidth = ctx.measureText(dataValue).width;
-                        ctx.fillRect(xPos - textWidth / 2 - 3, yPos - 12, textWidth + 6, 16);
-
-                        // Draw the text
-                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--heading-color');
-                        ctx.fillText(dataValue, xPos, yPos);
-                      }
-                    });
-                  }
-                });
-              },
-            },
-          ],
         });
       }
 
-      // Update statistics
+      // পরিসংখ্যান আপডেট করুন
       function updateStats() {
         if (studentData.length === 0) return;
 
-        // Filter data by group
+        // গ্রুপ দ্বারা ডেটা ফিল্টার করুন
         let filteredData = studentData;
         if (currentGroupFilter !== 'all') {
           filteredData = studentData.filter((student) => student.group === currentGroupFilter);
         }
 
-        // Calculate statistics
+        // পরিসংখ্যান গণনা করুন
         const totalStudents = filteredData.length;
         const absentStudents = filteredData.filter(
           (student) => student.written === 0 && student.mcq === 0 && student.practical === 0
@@ -741,43 +891,43 @@
         const passRate = totalStudents > 0 ? ((passedStudents / (totalStudents - absentStudents)) * 100).toFixed(1) : 0;
         const failRate = totalStudents > 0 ? ((failedStudents / (totalStudents - absentStudents)) * 100).toFixed(1) : 0;
 
-        // Update stats container
+        // পরিসংখ্যান কন্টেইনার আপডেট করুন
         statsContainer.innerHTML = `
-                <div class="stat-card">
+                <div class="stat-card fade-in">
                     <div class="stat-value">${totalStudents}</div>
-                    <div class="stat-label">Total Students</div>
+                    <div class="stat-label">মোট শিক্ষার্থী</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card fade-in">
                     <div class="stat-value">${absentStudents}</div>
-                    <div class="stat-label">Absent</div>
+                    <div class="stat-label">অনুপস্থিত</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card fade-in">
                     <div class="stat-value" style="color: var(--danger)">${failedStudents}</div>
-                    <div class="stat-label">Failed</div>
+                    <div class="stat-label">ফেল করেছে</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card fade-in">
                     <div class="stat-value" style="color: var(--success)">${passedStudents}</div>
-                    <div class="stat-label">Passed</div>
+                    <div class="stat-label">পাস করেছে</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card fade-in">
                     <div class="stat-value" style="color: var(--success)">${passRate}%</div>
-                    <div class="stat-label">Pass Rate</div>
+                    <div class="stat-label">পাসের হার</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card fade-in">
                     <div class="stat-value" style="color: var(--danger)">${failRate}%</div>
-                    <div class="stat-label">Fail Rate</div>
+                    <div class="stat-label">ফেলের হার</div>
                 </div>
             `;
       }
 
-      // Update group-wise pass/fail statistics
+      // গ্রুপভিত্তিক পাস/ফেল পরিসংখ্যান আপডেট করুন
       function updateGroupStats() {
         if (studentData.length === 0) return;
 
-        // Get unique groups
+        // ইউনিক গ্রুপ পান
         const groups = [...new Set(studentData.map((student) => student.group))];
 
-        // Calculate pass/fail for each group
+        // প্রতিটি গ্রুপের জন্য পাস/ফেল গণনা করুন
         const groupStats = groups.map((group) => {
           const groupStudents = studentData.filter((student) => student.group === group);
           const totalStudents = groupStudents.length;
@@ -805,24 +955,24 @@
           };
         });
 
-        // Update group stats container
+        // গ্রুপ পরিসংখ্যান কন্টেইনার আপডেট করুন
         groupStatsContainer.innerHTML = groupStats
           .map(
             (stat) => `
-                <div class="group-stat-card">
+                <div class="group-stat-card fade-in">
                     <div class="group-stat-header">
                         <span class="group-name">${stat.group}</span>
-                        <span>Total: ${stat.totalStudents}</span>
+                        <span>মোট: ${stat.totalStudents}</span>
                     </div>
-                    <div>Absent: ${stat.absentStudents}</div>
+                    <div>অনুপস্থিত: ${stat.absentStudents}</div>
                     <div class="pass-fail-stats">
                         <div class="pass-count">
                             <div class="stat-value">${stat.passedStudents}</div>
-                            <div class="stat-label">Passed (${stat.passRate}%)</div>
+                            <div class="stat-label">পাস করেছে (${stat.passRate}%)</div>
                         </div>
                         <div class="fail-count">
                             <div class="stat-value">${stat.failedStudents}</div>
-                            <div class="stat-label">Failed (${stat.failRate}%)</div>
+                            <div class="stat-label">ফেল করেছে (${stat.failRate}%)</div>
                         </div>
                     </div>
                 </div>
@@ -830,11 +980,11 @@
           )
           .join('');
 
-        // Update pass/fail chart
+        // পাস/ফেল চার্ট আপডেট করুন
         updatePassFailChart(groupStats);
       }
 
-      // Update pass/fail chart
+      // পাস/ফেল চার্ট আপডেট করুন
       function updatePassFailChart(groupStats) {
         if (passFailChart) {
           passFailChart.destroy();
@@ -847,17 +997,17 @@
             labels: groupStats.map((stat) => stat.group),
             datasets: [
               {
-                label: 'Passed',
+                label: 'পাস করেছে',
                 data: groupStats.map((stat) => stat.passedStudents),
-                backgroundColor: 'rgba(46, 204, 113, 0.7)',
-                borderColor: 'rgba(46, 204, 113, 1)',
+                backgroundColor: 'rgba(76, 201, 240, 0.7)',
+                borderColor: 'rgba(76, 201, 240, 1)',
                 borderWidth: 1,
               },
               {
-                label: 'Failed',
+                label: 'ফেল করেছে',
                 data: groupStats.map((stat) => stat.failedStudents),
-                backgroundColor: 'rgba(231, 76, 60, 0.7)',
-                borderColor: 'rgba(231, 76, 60, 1)',
+                backgroundColor: 'rgba(247, 37, 133, 0.7)',
+                borderColor: 'rgba(247, 37, 133, 1)',
                 borderWidth: 1,
               },
             ],
@@ -870,7 +1020,7 @@
                 beginAtZero: true,
                 title: {
                   display: true,
-                  text: 'Number of Students',
+                  text: 'শিক্ষার্থীর সংখ্যা',
                 },
                 grid: {
                   color: 'rgba(128, 128, 128, 0.1)',
@@ -879,7 +1029,7 @@
               x: {
                 title: {
                   display: true,
-                  text: 'Groups',
+                  text: 'গ্রুপ',
                 },
                 grid: {
                   color: 'rgba(128, 128, 128, 0.1)',
@@ -899,58 +1049,64 @@
         });
       }
 
-      // Update failed students list
+      // ফেল করা শিক্ষার্থীদের তালিকা আপডেট করুন
       function updateFailedStudents() {
         if (studentData.length === 0) return;
 
-        // Filter data by group
+        // গ্রুপ দ্বারা ডেটা ফিল্টার করুন
         let filteredData = studentData;
         if (currentGroupFilter !== 'all') {
           filteredData = studentData.filter((student) => student.group === currentGroupFilter);
         }
 
-        // Get failed students (written < 17 and not absent)
+        // ফেল করা শিক্ষার্থীদের পান (লিখিত < 17 এবং অনুপস্থিত নয়)
         const failedStudents = filteredData.filter(
           (student) => student.written < 17 && !(student.written === 0 && student.mcq === 0 && student.practical === 0)
         );
 
-        // Update failed students container
+        // ফেল করা শিক্ষার্থী কন্টেইনার আপডেট করুন
         if (failedStudents.length > 0) {
           failedStudentsContainer.innerHTML = failedStudents
             .map(
               (student) => `
-                    <div class="failed-student">
+                    <div class="failed-student fade-in">
                         <strong>${student.name}</strong><br>
-                        Group: ${student.group}<br>
-                        Written: ${student.written}<br>
-                        MCQ: ${student.mcq}<br>
-                        Practical: ${student.practical}<br>
-                        Total: ${student.total}
+                        গ্রুপ: ${student.group}<br>
+                        লিখিত: ${student.written}<br>
+                        এমসিকিউ: ${student.mcq}<br>
+                        প্র্যাকটিক্যাল: ${student.practical}<br>
+                        মোট: ${student.total}
                     </div>
                 `
             )
             .join('');
         } else {
-          failedStudentsContainer.innerHTML = '<div class="failed-student">No failed students in this group</div>';
+          failedStudentsContainer.innerHTML =
+            '<div class="failed-student fade-in">এই গ্রুপে কোনো ফেল করা শিক্ষার্থী নেই</div>';
         }
       }
 
-      // Export chart as image
+      // চার্টকে ইমেজ হিসেবে এক্সপোর্ট করুন
       function exportChart() {
         if (currentChart) {
           const link = document.createElement('a');
-          link.download = 'student-performance-chart.png';
+          link.download = 'শিক্ষার্থী-পারফর্ম্যান্স-চার্ট.png';
           link.href = chartCanvas.toDataURL('image/png');
           link.click();
         }
       }
 
-      // Toggle dark/light mode
+      // ডার্ক/লাইট মোড টগল করুন
       function toggleTheme() {
         document.body.classList.toggle('dark-mode');
-        themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        const icon = themeToggle.querySelector('i');
+        if (document.body.classList.contains('dark-mode')) {
+          icon.className = 'fas fa-sun';
+        } else {
+          icon.className = 'fas fa-moon';
+        }
 
-        // Update charts to reflect theme change
+        // থিম পরিবর্তন প্রতিফলিত করতে চার্ট আপডেট করুন
         if (currentChart) {
           currentChart.update();
         }
@@ -959,7 +1115,70 @@
         }
       }
 
-      // Initialize the app when DOM is loaded
+      // অটো আপডেট শুরু করুন (সিমুলেটেড রিয়েল-টাইম)
+      function startAutoUpdate() {
+        // প্রতি 30 সেকেন্ডে আপডেট করুন
+        autoUpdateInterval = setInterval(() => {
+          // এলোমেলোভাবে কিছু শিক্ষার্থীর স্কোর আপডেট করুন (সিমুলেশনের জন্য)
+          const randomUpdates = Math.floor(Math.random() * 5) + 1; // 1-5 শিক্ষার্থী আপডেট করুন
+
+          for (let i = 0; i < randomUpdates; i++) {
+            const randomIndex = Math.floor(Math.random() * studentData.length);
+            const student = studentData[randomIndex];
+
+            // শুধুমাত্র উপস্থিত শিক্ষার্থীদের আপডেট করুন
+            if (student.written > 0 || student.mcq > 0 || student.practical > 0) {
+              // এলোমেলোভাবে স্কোর সামান্য পরিবর্তন করুন
+              if (Math.random() > 0.5 && student.written < 50) {
+                student.written += 1;
+              } else if (student.written > 5) {
+                student.written -= 1;
+              }
+
+              // মোট স্কোর পুনঃগণনা করুন
+              student.total = student.written + student.mcq + student.practical;
+            }
+          }
+
+          // UI আপডেট করুন
+          updateChart();
+          updateStats();
+          updateGroupStats();
+          updateFailedStudents();
+
+          // সূচনা বার্তা দেখান
+          showNotification(`${randomUpdates} জন শিক্ষার্থীর স্কোর আপডেট হয়েছে`);
+        }, 30000); // 30 সেকেন্ড
+      }
+
+      // নোটিফিকেশন দেখান
+      function showNotification(message) {
+        // একটি সাধারণ নোটিফিকেশন তৈরি করুন
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--primary);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: fadeIn 0.5s, fadeOut 0.5s 2.5s forwards;
+            `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // 3 সেকেন্ড পরে নোটিফিকেশন সরান
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 3000);
+      }
+
+      // DOM লোড হলে অ্যাপ ইনিশিয়ালাইজ করুন
       document.addEventListener('DOMContentLoaded', init);
     </script>
   </body>
